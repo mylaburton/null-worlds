@@ -1,0 +1,20 @@
+\begin{table}[h!]
+\centering
+\caption{ADF Test Results for Military Expenditures}
+\label{tab:adf_results_filtered}
+\begin{tabular}{lrrrl}
+\toprule
+   State &  Test Stat &  Critical Value (5\%) &  P-Value & Stationarity? \\
+\midrule
+   Armenia &           1.649 &               -2.994 &    0.998 &     Non-Stationary \\
+Azerbaijan &          -0.872 &               -2.994 &    0.876 &     Non-Stationary \\
+   Belarus &          -2.015 &               -2.994 &    0.588 &     Non-Stationary \\
+Kazakhstan &           0.765 &               -2.994 &    0.910 &     Non-Stationary \\
+Kyrgyzstan &          -0.334 &               -2.994 &    0.945 &     Non-Stationary \\
+    Latvia &          -1.674 &               -2.994 &    0.681 &     Non-Stationary \\
+ Lithuania &          -2.219 &               -2.994 &    0.420 &     Non-Stationary \\
+    Russia &          -1.240 &               -2.994 &    0.763 &     Non-Stationary \\
+   Ukraine &          -1.556 &               -2.994 &    0.675 &     Non-Stationary \\
+\bottomrule
+\end{tabular}
+\end{table}
