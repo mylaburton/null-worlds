@@ -1,0 +1,223 @@
+---
+title: "Empirical Null Worlds"
+author: "Myla Burton"
+date: "2024-12-18"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Administrative stuff: getting the dataset and installing necessary packages
+
+```{r load-data, message=FALSE, warning=FALSE}
+# The URL to the raw CSV file on my GitHub repository.
+url <- "https://raw.githubusercontent.com/mylaburton/null-worlds/refs/heads/main/ExtendedTS.csv"
+
+# Read the CSV file.
+ExtendedTS <- read.csv(url)
+
+# Display the first few rows of the dataset to ensure all is working properly.
+head(ExtendedTS)
+```
+
+# Testing for Stationarity in the ExtendedTS series 
+## Augmented Dickey-Fuller (ADF) Test: the null is that the series has a unit root (i.e., the series is nonstationary)
+```{r}
+# Install and load the tseries package
+install.packages("tseries")
+library(tseries)
+
+# Run the ADF Test for each of the state's series 
+adf.test(ExtendedTS$Armenia)
+adf.test(ExtendedTS$Azerbaijan)
+adf.test(ExtendedTS$Belarus)
+adf.test(ExtendedTS$Kazakhstan)
+adf.test(ExtendedTS$Kyrgyzstan)
+adf.test(ExtendedTS$Latvia)
+adf.test(ExtendedTS$Lithuania)
+adf.test(ExtendedTS$Russia)
+adf.test(ExtendedTS$Ukraine)
+```
+
+## Kwiatkowski-Phillips-Schmidt-Shin Test: the null is that the series is stationary around a deterministic trend (trend stationarity or level stationarity). This is the opposite of the ADF.
+```{r}
+# Run the KPSS test for each of the state's series
+kpss.test(ExtendedTS$Armenia)
+kpss.test(ExtendedTS$Azerbaijan)
+kpss.test(ExtendedTS$Belarus)
+kpss.test(ExtendedTS$Kazakhstan)
+kpss.test(ExtendedTS$Kyrgyzstan)
+kpss.test(ExtendedTS$Latvia)
+kpss.test(ExtendedTS$Lithuania)
+kpss.test(ExtendedTS$Russia)
+kpss.test(ExtendedTS$Ukraine)
+```
+
+## Phillips-Perron Test: the null is that the series has a unit root (i.e., the series is nonstationary)
+```{r}
+# Run the Phillips-Perron test for each of the state's series
+pp.test(ExtendedTS$Armenia)
+pp.test(ExtendedTS$Azerbaijan)
+pp.test(ExtendedTS$Belarus)
+pp.test(ExtendedTS$Kazakhstan)
+pp.test(ExtendedTS$Kyrgyzstan)
+pp.test(ExtendedTS$Latvia)
+pp.test(ExtendedTS$Lithuania)
+pp.test(ExtendedTS$Russia)
+pp.test(ExtendedTS$Ukraine)
+```
+
+# Defining the Simulation Function 
+```{r}
+install.packages("urca")
+library(urca)
+
+simulate_null_worlds <- function(ExtendedTS, n_simulations = 10000, null_type = "russia_ignores", block_size = 5, seed = 123) {
+  set.seed(seed)
+  n <- nrow(ExtendedTS)
+  
+  # Creating a data frame to store the simulation results. We are storing the   estimated rank of cointegration for each simulation into this data frame.
+  results <- data.frame(simulation = seq_len(n_simulations), cointegrated_rank = integer(n_simulations), cointegrating_vectors = I(vector("list", n_simulations)))
+  
+  # Counter for false positives
+  false_positives <- 0
+  
+  # Starting the simulation loop. It will loop over 10,000 (the number of     simulations specified in n_simulations_)
+  for(i in seq_len(n_simulations)) {
+    permuted_data <- ExtendedTS
+    
+    # Applying the null hypothesis. Here we are simulating a null world by     shuffling the data under each of the   specified null hypotheses.
+    if (null_type == "russia_ignores") {
+    permuted_data$Russia <- sample(ExtendedTS$Russia) #Shuffling only Russia
+    } else if (null_type == "everyone_ignores_each_other") {
+      permuted_data <- as.data.frame(apply(ExtendedTS, 2, sample)) # Shuffling all series 
+    } else if (null_type == "block_permutation") {
+      permuted_data <- as.data.frame(matrix(nrow=n, ncol = ncol(ExtendedTS)))
+      colnames(permuted_data) <- colnames(ExtendedTS)
+      
+      for (col in 1:ncol(ExtendedTS)) {
+        series <- ExtendedTS[, col]
+        num_blocks <- ceiling(n / block_size)
+        blocks <- split(series, ceiling(seq_along(series) /block_size))
+        shuffled_blocks <- sample(blocks)
+        permuted_series <- unlist(shuffled_blocks)[1:n]
+        permuted_data[, col] <- permuted_series
+  }
+    } else {
+    # Stopping if an invalid null_type is passed
+    stop("Invalid null_type")
+    }
+    
+    # Running the Johansen test
+    johansen_test <- ca.jo(permuted_data, type = "trace", ecdet = "const", K = 2)
+    trace_stat <- johansen_test@teststat
+    critical_values <- johansen_test@cval
+    cointegrated_rank <- min(sum(trace_stat > critical_values[, 2]), ncol(permuted_data) - 1)
+    
+    # Storing the results
+    results$cointegrated_rank[i] <- cointegrated_rank
+    
+    # Extracting and storing the cointegrating vectors if the rank is above 0
+    if (cointegrated_rank > 0) {
+      results$cointegrating_vectors[[i]] <- johansen_test@V[, 1:cointegrated_rank]
+    } else {
+      results$cointegrating_vectors[[i]] <- NA # No cointegration detected
+    }
+    
+    # Check if the permuted rank exceeds the observed rank
+    if (cointegrated_rank >= observed_rank) {
+      false_positives <- false_positives + 1
+    }
+  }
+  # Calculate false positive rate
+  false_positive_rate <- false_positives / n_simulations
+  
+  # Create a summary table of cointegrated ranks
+  rank_table <- table(results$cointegrated_rank)
+  
+  # Debugging false positive rate
+  cat("False positives:", false_positives, "False positive rate:", false_positive_rate, "\n")
+  
+  return(list(results = results, false_positive_rate = false_positive_rate))
+  return(results)
+}
+```
+
+# Observed Cointegration Test and Null World Simulations 
+```{r}
+# Preparing the data with the relevant series
+combined_data <- ExtendedTS[, c("Armenia", "Azerbaijan", "Belarus", "Ukraine", "LitLat", "Kazakhstan", "Kyrgyzstan", "Russia")]
+
+# Computing the observed rank for the original dataset using the Johansens Cointegration Test
+observed_test <- ca.jo(combined_data, 
+                       type = "trace",
+                       ecdet = "const",
+                       K = 2)
+observed_trace_stat <- observed_test@teststat
+observed_critical_values <- observed_test@cval
+observed_rank <- min(sum(observed_trace_stat > observed_critical_values[,2]),
+                     ncol(combined_data)-1)
+
+# Null World 1: Everybody Ignores Everybody
+results_null1 <- simulate_null_worlds(combined_data, n_simulations = 10000, null_type = "everyone_ignores_each_other")
+
+# Null World 2: Russia Ignores Everybody
+results_null2 <- simulate_null_worlds(combined_data, n_simulations = 10000, null_type = "russia_ignores")
+
+# Null World 3: Block Permutations
+results_null3 <- simulate_null_worlds(combined_data, n_simulations = 10000, null_type = "block_permutation", block_size = 5)
+
+# Summarizing the results
+cat("Observed Cointegrated Rank:", observed_rank, "\n")
+cat("Null World 1 (Everbody Ignores Everbody):\n")
+cat("False Positive Rate for Null 1:", results_null1$false_positive_rate, "\n\n")
+
+cat("Null World 2 (Russia Ignores Everyone):\n")
+cat("False Positive Rate for Null 2:", results_null2$false_positive_rate, "\n\n")
+
+cat("Null World 3 (Block Permutations):\n")
+cat("False Positive Rate for Null 3:", results_null3$false_positive_rate, "\n\n")
+
+```
+
+# Creating the Visual Plots of the Null World Distributions
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+
+# A function to create and display the plot for each of the null world's distributions
+create_plot <- function(results, observed_rank, null_world_name) {
+  # Creating a data frame for plotting
+  plot_data <- data.frame(CointegratedRank = results$results$cointegrated_rank)
+  
+  # Generating the plot
+  ggplot(plot_data, aes(x = CointegratedRank)) +
+    geom_histogram(bins = 30, fill = "skyblue", alpha = 0.7, boundary = 0) + geom_vline(aes(xintercept = observed_rank), color = "red", linetype = "dashed", linewidth = 1) +
+    labs(
+      title = paste("Null Distribution for", null_world_name),
+      x = "Cointegrated Rank",
+      y = "Frequency",
+      subtitle = "Red dashed line indicates the observed cointegrated rank"
+    ) +
+    theme_minimal()
+}
+
+# Generating and printing the plots for each null world
+
+# Plot for Null World 2: Russia Ignores Everyone
+plot2 <- create_plot(results_null2, observed_rank, "Null World 2 (Russia Ignores Everyone)")
+print(plot2)
+
+# Plot for Null World 1: Everyone Ignores Each Other
+plot1 <- create_plot(results_null1, observed_rank, "Null World 1 (Everyone Ignores Each Other)")
+print(plot1)
+
+# Plot for Null World 3: Block Permutation
+plot3 <- create_plot(results_null3, observed_rank, "Null World 3 (Block Permutation)")
+print(plot3)
+```
+
