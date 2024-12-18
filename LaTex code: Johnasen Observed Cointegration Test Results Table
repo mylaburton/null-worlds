@@ -1,0 +1,19 @@
+\begin{table}[h!]
+\centering
+\caption{Johansen Cointegration Test Results}
+\label{tab:johansen_results}
+\begin{tabular}{@{}ccccccc@{}}
+\toprule
+Rank ($r$) & Statistic & 5\% CV & Reject $H_0$ (Trace)? & Statistic & 5\% CV & Reject $H_0$ (Max)? \\ 
+\midrule
+0 & 473.39 & 165.58 & Yes & 154.26 & 60.06 & Yes \\ 
+1 & 319.13 & 131.70 & Yes & 106.02 & 57.01 & Yes \\ 
+2 & 213.11 & 102.14 & Yes & 68.83  & 51.42 & Yes \\ 
+3 & 144.28 & 76.07  & Yes & 57.56  & 45.28 & Yes \\ 
+4 & 86.72  & 53.12  & Yes & 37.27  & 39.37 & No  \\ 
+5 & 49.45  & 34.91  & Yes & 21.42  & 33.46 & No  \\ 
+6 & 28.03  & 19.96  & Yes & 16.46  & 27.07 & No  \\ 
+7 & 11.57  & 9.24   & No  & 11.57  & 21.16 & No  \\ 
+\bottomrule
+\end{tabular}
+\end{table}
