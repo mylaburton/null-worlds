@@ -1,0 +1,24 @@
+\begin{table}[h!]
+\centering
+\caption{KPSS Test Results for Military Expenditures}
+\label{tab:kpss_results_critical}
+\begin{tabular}{lrrrrl}
+\toprule
+   State     & Lag 0 & Lag 1 & Lag 2 & Lag 3 & Stationarity? \\
+\midrule
+\textbf{Critical Value (5\%)} & 0.463 & 0.463 & 0.463 & 0.463  \\
+\midrule
+   Armenia   & 2.160 & 1.340 & 0.995 & 0.800 & Non-Stationary \\
+Azerbaijan   & 2.060 & 1.110 & 0.789 & 0.632 & Non-Stationary \\
+   Belarus   & 2.450 & 1.350 & 0.966 & 0.769 & Non-Stationary \\
+Kazakhstan   & 1.850 & 0.975 & 0.682 & 0.539 & Non-Stationary \\
+Kyrgyzstan   & 1.850 & 1.090 & 0.824 & 0.698 & Non-Stationary \\
+   Latvia    & 2.220 & 1.220 & 0.876 & 0.704 & Non-Stationary \\
+ Lithuania   & 2.070 & 1.170 & 0.854 & 0.693 & Non-Stationary \\
+   Russia    & 2.450 & 1.320 & 0.940 & 0.744 & Non-Stationary \\
+   Ukraine   & 0.796 & 0.545 & 0.480 & 0.446 & Stationary (Lag 3) \\
+\bottomrule
+\end{tabular}
+\vspace{0.5em}
+\caption*{Note: The null hypothesis of stationarity is rejected if the test statistic exceeds the 5\% critical value (0.463).}
+\end{table}
