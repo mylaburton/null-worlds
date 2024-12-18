@@ -1,0 +1,20 @@
+\begin{table}[h!]
+\centering
+\caption{Phillips-Perron Test Results for Military Expenditures}
+\label{tab:pp_results_filtered}
+\begin{tabular}{lrrrl}
+\toprule
+   State &  Test Stat &  Critical Value (5\%) &  P-Value & Stationarity? \\
+\midrule
+   Armenia &           -1.02 &               -2.994 &     0.89 &    Non-Stationary \\
+Azerbaijan &           -0.92 &               -2.994 &     0.90 &    Non-Stationary \\
+   Belarus &           -1.56 &               -2.994 &     0.78 &    Non-Stationary \\
+Kazakhstan &           -0.77 &               -2.994 &     0.94 &    Non-Stationary \\
+Kyrgyzstan &           -0.88 &               -2.994 &     0.92 &    Non-Stationary \\
+    Latvia &           -1.42 &               -2.994 &     0.82 &    Non-Stationary \\
+ Lithuania &           -1.78 &               -2.994 &     0.69 &    Non-Stationary \\
+    Russia &           -1.03 &               -2.994 &     0.88 &    Non-Stationary \\
+   Ukraine &           -1.27 &               -2.994 &     0.76 &    Non-Stationary \\
+\bottomrule
+\end{tabular}
+\end{table}
